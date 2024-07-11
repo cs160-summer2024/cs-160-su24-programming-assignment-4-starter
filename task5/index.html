@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Task 5</title>
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Fira+Sans"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../vendor/bootstrap/css/bootstrap.css"
+    />
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
+
+    <style>
+      .upload-form {
+        margin-bottom: 2rem;
+
+        & form {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+        }
+      }
+
+      section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+      }
+
+      .game {
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 0.5rem;
+        width: 400px;
+      }
+
+      .game-data {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <h1>Game inventory</h1>
+      </header>
+
+      <h2>Add new game</h2>
+      <div class="upload-form">
+        <form>
+          <input type="file" name="file" class="form-control" />
+          <input type="submit" value="AI 🪄" class="btn btn-primary" />
+        </form>
+      </div>
+
+      <div class="new-game-form">
+        <form>
+          <div class="form-group row mb-4">
+            <label for="game-name" class="col-sm-2 col-form-label">
+              Game title
+            </label>
+            <div class="col-sm-10">
+              <input
+                type="text"
+                id="game-name"
+                name="game-name"
+                class="form-control"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group row mb-4">
+            <label for="min-players" class="col-sm-2 col-form-label">
+              Min Players
+            </label>
+            <div class="col-sm-4">
+              <input
+                type="number"
+                id="min-players"
+                name="min-players"
+                class="form-control"
+                min="1"
+              />
+            </div>
+            <label for="max-players" class="col-sm-2 col-form-label">
+              Max Players
+            </label>
+            <div class="col-sm-4">
+              <input
+                type="number"
+                id="max-players"
+                name="max-players"
+                class="form-control"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div class="form-group row mb-4">
+            <label for="min-age" class="col-sm-2 col-form-label">
+              Minimum Age
+            </label>
+            <div class="col-sm-10">
+              <input
+                type="number"
+                id="min-age"
+                name="min-age"
+                class="form-control"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div class="form-group row mb-4">
+            <label for="expected-playtime" class="col-sm-4 col-form-label">
+              Expected playtime (minutes)
+            </label>
+            <div class="col-sm-8">
+              <input
+                type="number"
+                id="expected-playtime"
+                name="expected-playtime"
+                class="form-control"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div class="col-sm-12 text-end">
+            <input type="submit" value="Add game" class="btn btn-primary" />
+          </div>
+        </form>
+      </div>
+
+      <h2>Games</h2>
+      <section id="game-list"></section>
+    </div>
+
+    <script>
+      // Code to add the game to the list
+
+      const addGameToList = (game) => {
+        const gameList = document.querySelector("#game-list");
+        const gameElement = document.createElement("div");
+        gameElement.classList.add("game");
+
+        let html = "";
+
+        html = `<h3 class="game-name">${game.name}</h3>`;
+
+        html += `
+          <div class="game-data">
+        `;
+
+        if (game.minPlayers && game.maxPlayers) {
+          if (game.minPlayers === game.maxPlayers) {
+            html += `
+              <p class="game-players">Players:<br/>${game.minPlayers}</p>
+            `;
+          } else {
+            html += `
+            <p class="game-players">Players:<br/>${game.minPlayers} - ${game.maxPlayers}</p>
+          `;
+          }
+        } else if (game.minPlayers) {
+          html += `
+            <p class="game-players">Players:<br/>${game.minPlayers}+</p>
+          `;
+        } else if (game.maxPlayers) {
+          html += `
+            <p class="game-players">Players:<br/>Up to ${game.maxPlayers}</p>
+          `;
+        }
+
+        if (game.minAge) {
+          html += `<p class="game-age">Minimum age:<br/>${game.minAge}</p>`;
+        }
+
+        if (game.expectedPlaytime) {
+          html += ` <p class="game-playtime">Expected playtime:<br/>${game.expectedPlaytime} minutes</p>
+        `;
+        }
+
+        html += `</div>`;
+
+        gameElement.innerHTML = html;
+
+        gameList.appendChild(gameElement);
+      };
+
+      const form = document.querySelector(".new-game-form form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const game = {
+          name: form["game-name"].value,
+          minPlayers: form["min-players"].value,
+          maxPlayers: form["max-players"].value,
+          minAge: form["min-age"].value,
+          expectedPlaytime: form["expected-playtime"].value,
+        };
+        addGameToList(game);
+        form.reset();
+      });
+
+      const uploadForm = document.querySelector(".upload-form");
+
+      uploadForm
+        .querySelector("form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const submitButton = uploadForm.querySelector("input[type='submit']");
+          submitButton.disabled = true;
+          submitButton.value = "Processing...";
+
+          const file = uploadForm.querySelector('input[type="file"]').files[0];
+          const fileReader = new FileReader();
+          fileReader.onload = async (readEvent) => {
+            const dataUrl = readEvent.target.result;
+
+            // YOUR CODE HERE: upload the dataUrl to a noggin, then pre-fill the form.
+
+            // Reset the submit button
+            submitButton.disabled = false;
+            submitButton.value = "AI 🪄";
+          };
+
+          fileReader.readAsDataURL(file);
+        });
+    </script>
+  </body>
+</html>
